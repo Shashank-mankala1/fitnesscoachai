@@ -4,7 +4,7 @@ def get_values(_id):
     return {
         "_id": _id, 
         "general": {
-            "name": "",
+            "name": "Test User",
             "age": 30,
             "weight": 60,
             "height": 165,
@@ -23,6 +23,7 @@ def get_values(_id):
 def create_profile(_id):
     profile_values = get_values(_id)
     result = personal_profiles_collection.insert_one(profile_values)
+    print(result)
     return result.inserted_id, result
 
 def get_profile(_id):

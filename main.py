@@ -1,7 +1,7 @@
 import streamlit as st
 from profiles import create_profile, get_profile, get_notes
 from form_submit import update_profile, add_note, delete_note
-from ai import get_macros
+from ai import get_macros, askAI
 
 
 st.title("Fitness Coach AI")
@@ -122,8 +122,9 @@ def macros():
 @st.fragment
 def notes():
     st.subheader("Your Notes")
-    print("Notes:", st.session_state.notes)
+    # print("Notes:", st.session_state.notes)
     for i,note in enumerate(st.session_state.notes):
+        # print("Note:", note)
         cols=st.columns([5,1])
         with cols[0]:
             st.text(note["text"])
@@ -131,38 +132,54 @@ def notes():
             if st.button("Delete", key=f"delete_note_{i}"):
                 delete_note(note["_id"])
                 st.session_state.notes.pop(i)
-                st.experimental_rerun()
-        
+                st.rerun()
+    # print("Adding new note section...")
     new_note=st.text_area("Add a new note")
     if st.button("Add Note"):
         if new_note.strip():
             added_note=add_note(st.session_state.profileid, new_note.strip())
-            st.session_state.notes["entries"].append(added_note)
-            st.experimental_rerun()
+            st.session_state.notes.append(added_note)
+            st.rerun()
         else:
             st.error("Note cannot be empty.")
 
+@st.fragment
+def askai():
+    st.header("Ask Fitness Coach AI")
+    question=st.text_area("Enter your question about fitness or nutrition:")
+    if st.button("Ask AI"):
+        if question.strip():
+            with st.spinner("Getting answer from AI..."):
+                answer = askAI(st.session_state.profile, question)
+                st.success("AI Answer:")
+                st.write(answer)
+        else:
+            st.error("Please enter a question before submitting.")
 
 def forms():
     if 'profile_created' not in st.session_state:
-        print("Creating profile...")
-        profile_id = "1" 
+        # print("Creating profile...")
+        profile_id = "125" 
         profile = get_profile(profile_id)
         if not profile:
             profile_id, profile = create_profile(profile_id)
+            profile=get_profile(profile_id)
+            # print("Profile created:", profile)
         st.session_state.profile=profile
         st.session_state.profileid=profile_id
         st.session_state.profile_created = True
     if "notes" not in st.session_state:
-        print("Fetching notes...")
-        notes = get_notes(st.session_state.profileid)
-        print(notes)
-        st.session_state.notes = notes
+        # print("Fetching notes...")
+        fetched_notes = get_notes(st.session_state.profileid)
+        # print(len(fetched_notes), "notes fetched.")
+        st.session_state.notes = fetched_notes
     
     data_form()
     goals_form()
     macros()
     notes()
+    askai()
+    print("All forms rendered.")
 
 if __name__ == "__main__":
     st.session_state.clear()

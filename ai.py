@@ -3,7 +3,7 @@ import os
 import uuid
 from typing import Optional
 import json
-
+from langflow.load import run_flow_from_json
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -55,7 +55,8 @@ def askAI(profile, question):
         }
     }
     payload["session_id"] = str(uuid.uuid4())
-    return requests.request("POST", url, json=payload, headers=headers)
+    res=requests.request("POST", url, json=payload, headers=headers)
+    return res.json()['outputs'][0]['outputs'][0]['results']['message']['data']['text']
 
 def get_macros(profile, goals):
     url = "https://aws-us-east-2.langflow.datastax.com/lf/dd9f6507-4d5c-4d30-ac65-28c56be5756f/api/v1/run/macros"  # The complete API endpoint URL for this flow
